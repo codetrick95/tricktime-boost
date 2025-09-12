@@ -28,10 +28,45 @@ import {
   Gift
 } from "lucide-react";
 
+interface FormData {
+  nome: string;
+  empresa: string;
+  telefone: string;
+  whatsapp: string;
+  email: string;
+}
+
+interface Testimonial {
+  name: string;
+  role: string;
+  image: string;
+  content: string;
+  rating: number;
+  metric: string;
+}
+
+interface Feature {
+  icon: any;
+  title: string;
+  description: string;
+  benefit: string;
+}
+
+interface Stat {
+  number: string;
+  label: string;
+  icon: any;
+}
+
 export default function LandingPage() {
-  const [form, setForm] = useState({ nome: "", empresa: "", telefone: "", whatsapp: "", email: "" });
+  const [form, setForm] = useState<FormData>({ 
+    nome: "", 
+    empresa: "", 
+    telefone: "", 
+    whatsapp: "", 
+    email: "" 
+  });
   const [timeLeft, setTimeLeft] = useState(3600); // 1 hora em segundos
-  const [isVisible, setIsVisible] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   // Contador regressivo
@@ -43,34 +78,21 @@ export default function LandingPage() {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  // Animação de entrada
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
-  // Rotação de depoimentos
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const formatTime = (seconds: number) => {
+  const formatTime = (seconds: number): string => {
     const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
     const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
     const s = String(seconds % 60).padStart(2, "0");
     return `${h}:${m}:${s}`;
   };
 
-  const stats = [
+  const stats: Stat[] = [
     { number: "15.000+", label: "Profissionais ativos", icon: Users },
     { number: "89%", label: "Redução de faltas", icon: TrendingUp },
     { number: "2min", label: "Setup médio", icon: Clock },
     { number: "99.9%", label: "Uptime garantido", icon: Shield }
   ];
 
-  const features = [
+  const features: Feature[] = [
     {
       icon: Calendar,
       title: "Agendamento Online Inteligente",
@@ -109,7 +131,7 @@ export default function LandingPage() {
     }
   ];
 
-  const testimonials = [
+  const testimonials: Testimonial[] = [
     {
       name: "Dra. Mariana Lopes",
       role: "Fisioterapeuta",
@@ -136,12 +158,26 @@ export default function LandingPage() {
     }
   ];
 
+  // Rotação de depoimentos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
+
   const socialProof = [
     "Recomendado pelo CRM de SP",
-    "Certificado LGPD",
+    "Certificado LGPD", 
     "Suporte 24/7",
     "99.9% Uptime"
   ];
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form submitted:", form);
+    // Aqui você adicionaria a lógica de envio do formulário
+  };
 
   return (
     <div className="font-sans text-foreground overflow-x-hidden">
@@ -149,13 +185,13 @@ export default function LandingPage() {
       <motion.header 
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="flex justify-between items-center p-4 lg:p-6 bg-background/80 backdrop-blur-md shadow-soft sticky top-0 z-50 border-b border-border/50"
+        className="flex justify-between items-center p-4 lg:p-6 bg-background/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-border/50"
       >
         <motion.div 
           className="flex items-center space-x-3"
           whileHover={{ scale: 1.05 }}
         >
-          <div className="bg-primary text-primary-foreground p-2 rounded-xl shadow-medium glow-effect">
+          <div className="bg-primary text-primary-foreground p-2 rounded-xl shadow-md">
             <CheckCircle className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-black bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
@@ -169,17 +205,20 @@ export default function LandingPage() {
             { href: "#funcionalidades", icon: ListCheck, label: "Funcionalidades" },
             { href: "#depoimentos", icon: MessageCircle, label: "Depoimentos" },
             { href: "#precos", icon: Star, label: "Oferta" }
-          ].map((item) => (
-            <motion.a
-              key={item.href}
-              href={item.href}
-              className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-300 group"
-              whileHover={{ y: -2 }}
-            >
-              <item.icon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-              <span className="font-medium">{item.label}</span>
-            </motion.a>
-          ))}
+          ].map((item, index) => {
+            const IconComponent = item.icon;
+            return (
+              <motion.a
+                key={`${item.href}-${index}`}
+                href={item.href}
+                className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-300 group"
+                whileHover={{ y: -2 }}
+              >
+                <IconComponent className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <span className="font-medium">{item.label}</span>
+              </motion.a>
+            );
+          })}
         </nav>
 
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -228,7 +267,7 @@ export default function LandingPage() {
                 className="text-4xl lg:text-6xl font-black mb-6 leading-tight"
               >
                 Agende <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">3x mais</span>, 
-                perca <span className="text-warning line-through decoration-4">89% menos</span>
+                perca <span className="text-warning">89% menos</span>
               </motion.h1>
 
               {/* Subtítulo com Benefício */}
@@ -289,20 +328,23 @@ export default function LandingPage() {
             >
               {/* Estatísticas em Grid */}
               <div className="grid grid-cols-2 gap-6">
-                {stats.map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.8 + index * 0.2 }}
-                    className="feature-card text-center float-animation"
-                    style={{ animationDelay: `${index * 0.5}s` }}
-                  >
-                    <stat.icon className="w-8 h-8 text-primary mx-auto mb-3" />
-                    <div className="stat-number mb-1">{stat.number}</div>
-                    <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
-                  </motion.div>
-                ))}
+                {stats.map((stat, index) => {
+                  const StatIcon = stat.icon;
+                  return (
+                    <motion.div
+                      key={`stat-${index}`}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.8 + index * 0.2 }}
+                      className="feature-card text-center float-animation"
+                      style={{ animationDelay: `${index * 0.5}s` }}
+                    >
+                      <StatIcon className="w-8 h-8 text-primary mx-auto mb-3" />
+                      <div className="stat-number mb-1">{stat.number}</div>
+                      <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
           </div>
@@ -369,33 +411,36 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="feature-card group hover:bg-gradient-to-br hover:from-card hover:to-primary-light/5"
-              >
-                <div className="flex items-center mb-4">
-                  <div className="bg-primary/10 text-primary p-3 rounded-xl mr-4 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                    <feature.icon className="w-6 h-6" />
+            {features.map((feature, index) => {
+              const FeatureIcon = feature.icon;
+              return (
+                <motion.div
+                  key={`feature-${index}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="feature-card group hover:bg-gradient-to-br hover:from-card hover:to-primary-light/5"
+                >
+                  <div className="flex items-center mb-4">
+                    <div className="bg-primary/10 text-primary p-3 rounded-xl mr-4 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                      <FeatureIcon className="w-6 h-6" />
+                    </div>
+                    <Badge className="bg-accent/10 text-accent text-xs font-bold">
+                      {feature.benefit}
+                    </Badge>
                   </div>
-                  <Badge className="bg-accent/10 text-accent text-xs font-bold">
-                    {feature.benefit}
-                  </Badge>
-                </div>
-                
-                <h4 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
-                  {feature.title}
-                </h4>
-                
-                <p className="text-muted-foreground leading-relaxed">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
+                  
+                  <h4 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
+                    {feature.title}
+                  </h4>
+                  
+                  <p className="text-muted-foreground leading-relaxed">
+                    {feature.description}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </section>
@@ -433,7 +478,7 @@ export default function LandingPage() {
                   <img 
                     src={testimonials[currentTestimonial].image} 
                     alt={testimonials[currentTestimonial].name}
-                    className="w-20 h-20 rounded-full object-cover ring-4 ring-primary/20 shadow-medium"
+                    className="w-20 h-20 rounded-full object-cover ring-4 ring-primary/20 shadow-md"
                   />
                 </div>
                 
@@ -514,7 +559,7 @@ export default function LandingPage() {
           <motion.div
             animate={{ scale: [1, 1.02, 1] }}
             transition={{ duration: 1, repeat: Infinity }}
-            className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-2xl shadow-strong max-w-md mx-auto mb-8"
+            className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-2xl shadow-lg max-w-md mx-auto mb-8"
           >
             <div className="text-sm font-bold mb-2">⏰ OFERTA EXPIRA EM:</div>
             <div className="text-4xl font-black font-mono tracking-wider">
@@ -528,22 +573,25 @@ export default function LandingPage() {
               { icon: CheckCircle, text: "14 dias grátis", desc: "Teste sem risco" },
               { icon: Users, text: "Pacientes ilimitados", desc: "Sem limite de cadastros" },
               { icon: Zap, text: "Suporte prioritário", desc: "Atendimento VIP 24/7" }
-            ].map((benefit, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center space-x-3 bg-card p-4 rounded-xl border border-primary/20"
-              >
-                <benefit.icon className="w-6 h-6 text-accent flex-shrink-0" />
-                <div>
-                  <div className="font-bold">{benefit.text}</div>
-                  <div className="text-sm text-muted-foreground">{benefit.desc}</div>
-                </div>
-              </motion.div>
-            ))}
+            ].map((benefit, index) => {
+              const BenefitIcon = benefit.icon;
+              return (
+                <motion.div
+                  key={`benefit-${index}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-center space-x-3 bg-card p-4 rounded-xl border border-primary/20"
+                >
+                  <BenefitIcon className="w-6 h-6 text-accent flex-shrink-0" />
+                  <div>
+                    <div className="font-bold">{benefit.text}</div>
+                    <div className="text-sm text-muted-foreground">{benefit.desc}</div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* CTA da Oferta */}
@@ -552,14 +600,6 @@ export default function LandingPage() {
               className="btn-hero text-2xl px-12 py-6 mb-6"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              animate={{ 
-                boxShadow: [
-                  "0 0 20px rgba(34, 197, 94, 0.4)",
-                  "0 0 40px rgba(34, 197, 94, 0.6)", 
-                  "0 0 20px rgba(34, 197, 94, 0.4)"
-                ]
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
             >
               🚀 GARANTIR MINHA VAGA COM 82% OFF
             </motion.button>
@@ -604,7 +644,8 @@ export default function LandingPage() {
           </div>
 
           <motion.form 
-            className="space-y-6 bg-card p-8 rounded-2xl shadow-medium border border-primary/10"
+            onSubmit={handleFormSubmit}
+            className="space-y-6 bg-card p-8 rounded-2xl shadow-md border border-primary/10"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -617,6 +658,7 @@ export default function LandingPage() {
                   value={form.nome}
                   onChange={(e) => setForm({ ...form, nome: e.target.value })}
                   className="transition-all duration-300 focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  required
                 />
               </div>
               <div>
@@ -638,6 +680,7 @@ export default function LandingPage() {
                   value={form.whatsapp}
                   onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
                   className="transition-all duration-300 focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  required
                 />
               </div>
               <div>
@@ -648,12 +691,13 @@ export default function LandingPage() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="transition-all duration-300 focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  required
                 />
               </div>
             </div>
 
             <motion.button
-              type="button"
+              type="submit"
               className="btn-hero w-full text-xl py-4"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
