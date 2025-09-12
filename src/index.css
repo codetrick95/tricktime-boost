@@ -110,9 +110,14 @@
   /* Hero Button */
   .btn-hero {
     @apply bg-gradient-to-r from-accent to-accent/90 text-accent-foreground font-bold text-lg px-8 py-4 rounded-xl;
-    @apply shadow-strong hover:shadow-glow transform hover:scale-105 active:scale-95;
+    @apply shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95;
     @apply transition-all duration-300 ease-out;
     @apply relative overflow-hidden;
+    box-shadow: 0 8px 32px hsl(var(--accent) / 0.16);
+  }
+  
+  .btn-hero:hover {
+    box-shadow: 0 0 32px hsl(var(--accent) / 0.3);
   }
   
   .btn-hero::before {
@@ -129,40 +134,45 @@
   /* CTA Button */
   .btn-cta {
     @apply bg-primary text-primary-foreground font-bold px-6 py-3 rounded-lg;
-    @apply shadow-medium hover:shadow-strong transform hover:scale-105;
+    @apply shadow-md hover:shadow-lg transform hover:scale-105;
     @apply transition-all duration-300 ease-out;
     @apply border-2 border-transparent hover:border-primary-light;
   }
 
   /* Feature Card */
   .feature-card {
-    @apply bg-card border border-border rounded-xl p-6 shadow-soft;
-    @apply hover:shadow-medium transform hover:scale-105 hover:-translate-y-1;
+    @apply bg-card border border-border rounded-xl p-6 shadow-sm;
+    @apply hover:shadow-md transform hover:scale-105 hover:-translate-y-1;
     @apply transition-all duration-300 ease-out;
     @apply relative overflow-hidden;
   }
   
   .feature-card::before {
     content: '';
-    @apply absolute top-0 left-0 w-full h-1 bg-gradient-primary;
+    @apply absolute top-0 left-0 w-full h-1;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
   }
 
   /* Testimonial Card */
   .testimonial-card {
     @apply bg-gradient-to-br from-card to-primary-light/10 border border-primary-light/20;
-    @apply rounded-2xl p-6 shadow-medium hover:shadow-strong;
+    @apply rounded-2xl p-6 shadow-md hover:shadow-lg;
     @apply transform hover:scale-105 transition-all duration-300 ease-out;
   }
 
   /* Stats Number */
   .stat-number {
-    @apply text-4xl font-black bg-gradient-primary bg-clip-text text-transparent;
+    @apply text-4xl font-black;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   /* Urgency Badge */
   .urgency-badge {
     @apply bg-warning text-warning-foreground px-4 py-2 rounded-full font-bold;
-    @apply animate-pulse shadow-medium;
+    @apply animate-pulse shadow-md;
   }
 
   /* Floating Animation */
@@ -182,8 +192,8 @@
   
   .glow-effect::after {
     content: '';
-    @apply absolute inset-0 rounded-inherit;
-    @apply bg-gradient-primary opacity-20 blur-xl;
+    @apply absolute inset-0 rounded-inherit opacity-20 blur-xl;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
     z-index: -1;
   }
 
