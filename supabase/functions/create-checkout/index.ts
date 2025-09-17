@@ -22,8 +22,27 @@ serve(async (req) => {
       throw new Error("Email is required");
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
-      apiVersion: "2025-08-27.basil" 
+    const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
+    const PRICE_ID = Deno.env.get("PRICE_ID");
+
+    if (!STRIPE_SECRET_KEY) {
+      console.error("Missing STRIPE_SECRET_KEY env var");
+      return new Response(JSON.stringify({ error: "Configuração ausente: STRIPE_SECRET_KEY" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
+    if (!PRICE_ID) {
+      console.error("Missing PRICE_ID env var");
+      return new Response(JSON.stringify({ error: "Configuração ausente: PRICE_ID" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
+    const stripe = new Stripe(STRIPE_SECRET_KEY, { 
+      apiVersion: "2024-06-20" 
     });
 
     // Verificar se já existe um cliente Stripe
@@ -38,19 +57,23 @@ serve(async (req) => {
       console.log("Created new customer:", customerId);
     }
 
-    // Criar sessão de checkout com o price ID fornecido pelo usuário
+    // URLs de redirecionamento
+    const origin = req.headers.get("origin") || Deno.env.get("FRONTEND_URL") || "http://localhost:5173";
+
+    // Criar sessão de checkout com o PRICE_ID configurado
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
-          price: "price_1S8Bv2CWSjlvwjXlH8VtpxtS", // Price ID fornecido pelo usuário
+          price: PRICE_ID, // Price ID do Stripe configurado no ambiente
           quantity: 1,
         },
       ],
       mode: "subscription",
-      payment_method_types: ["card", "pix"], // Suporte a cartão e PIX
-      success_url: `${req.headers.get("origin")}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/`,
+      // Habilita automaticamente métodos suportados (cartão, pix, etc.)
+      automatic_payment_methods: { enabled: true },
+      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/`,
       metadata: {
         customer_email: email,
       },
@@ -63,8 +86,9 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error("Error in create-checkout:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const message = (error as any)?.message || "Erro desconhecido";
+    console.error("Error in create-checkout:", message);
+    return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

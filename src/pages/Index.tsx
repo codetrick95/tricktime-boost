@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,12 +10,11 @@ import {
   ListCheck, 
   Star, 
   MessageCircle, 
-  Phone, 
   Clock,
+  Calendar,
   Users,
   TrendingUp,
   CheckCircle,
-  Calendar,
   Smartphone,
   Bell,
   Link2,
@@ -34,15 +32,6 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useNavigate, Link } from "react-router-dom";
-
-interface FormData {
-  nome: string;
-  empresa: string;
-  telefone: string;
-  whatsapp: string;
-  email: string;
-}
 
 interface Testimonial {
   name: string;
@@ -67,19 +56,11 @@ interface Stat {
 }
 
 export default function LandingPage() {
-  const [form, setForm] = useState<FormData>({ 
-    nome: "", 
-    empresa: "", 
-    telefone: "", 
-    whatsapp: "", 
-    email: "" 
-  });
   const [timeLeft, setTimeLeft] = useState(3600); // 1 hora em segundos
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [checkoutEmail, setCheckoutEmail] = useState("");
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
-  const navigate = useNavigate();
 
   // Contador regressivo
   useEffect(() => {
@@ -97,6 +78,12 @@ export default function LandingPage() {
     return `${h}:${m}:${s}`;
   };
 
+  // Gera avatares com IA (DiceBear) com base no nome para fotos consistentes
+  const getAIHeadshotUrl = (name: string) =>
+    `https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=${encodeURIComponent(
+      name
+    )}&backgroundColor=b6e3f4,c0aede,d1d4f9&radius=50&size=200`;
+
   const stats: Stat[] = [
     { number: "15.000+", label: "Profissionais ativos", icon: Users },
     { number: "89%", label: "Redução de faltas", icon: TrendingUp },
@@ -108,62 +95,56 @@ export default function LandingPage() {
     {
       icon: Calendar,
       title: "Agendamento Online Inteligente",
-      description: "Pacientes agendam em segundos através de link personalizado. Sistema previne conflitos e otimiza sua agenda automaticamente.",
+      description: "Clientes agendam em segundos através de link personalizado. Sistema previne conflitos e otimiza sua agenda automaticamente.",
       benefit: "Economize 3h/dia em ligações"
     },
     {
-      icon: Bell,
-      title: "Lembretes Automáticos Personalizados", 
-      description: "WhatsApp, SMS e email automáticos. Mensagens customizáveis que reduzem faltas em até 89%.",
-      benefit: "Reduza faltas em 89%"
-    },
-    {
       icon: Users,
-      title: "Gestão Completa de Pacientes",
-      description: "Histórico, preferências, observações e prontuário digital. Relacionamento personalizado que fideliza.",
+      title: "Gestão Completa de Clientes",
+      description: "Histórico, preferências e observações. Relacionamento personalizado que fideliza.",
       benefit: "Aumente retenção em 67%"
-    },
-    {
-      icon: Smartphone,
-      title: "App Mobile Nativo",
-      description: "Gerencie sua agenda onde estiver. Notificações push, sincronização em tempo real.",
-      benefit: "Trabalhe de qualquer lugar"
     },
     {
       icon: Link2,
       title: "Link Público Personalizado",
-      description: "Compartilhe nas redes sociais. Pacientes agendam 24/7 sem intermediários.",
+      description: "Compartilhe nas redes sociais. Clientes agendam 24/7 sem intermediários.",
       benefit: "Agendamentos 24/7"
     },
     {
-      icon: Zap,
-      title: "Integrações Poderosas",
-      description: "Google Calendar, WhatsApp Business, sistemas de pagamento. Tudo conectado e automatizado.",
-      benefit: "Automação total"
+      icon: Home,
+      title: "Dashboard simples e poderoso",
+      description: "Visão geral do seu negócio: agendamentos do dia, próximos dias e ações rápidas em um só lugar.",
+      benefit: "Tudo em um painel"
+    },
+    {
+      icon: Clock,
+      title: "Horários de atendimento flexíveis",
+      description: "Defina seus dias e horários de atendimento. Clientes só agendam dentro do que você permitir.",
+      benefit: "Controle total da agenda"
     }
   ];
 
   const testimonials: Testimonial[] = [
     {
-      name: "Dra. Mariana Lopes",
-      role: "Fisioterapeuta",
-      image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face",
-      content: "Minha agenda passou de caótica para organizada. Agora atendo 40% mais pacientes sem estresse. O TrickTime é essencial!",
+      name: "Mariana Lopes",
+      role: "Cabeleireira",
+      image: "/images/testimonials/mariana.jpg",
+      content: "Minha agenda passou de caótica para organizada. Agora atendo 40% mais clientes sem estresse. O TrickTime é essencial!",
       rating: 5,
-      metric: "+40% pacientes"
+      metric: "+40% clientes"
     },
     {
-      name: "Dr. Ricardo Santos", 
-      role: "Dentista",
-      image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face",
-      content: "Desde que comecei a usar, minhas faltas diminuíram 85%. Os lembretes automáticos são um diferencial incrível.",
+      name: "Ana Souza", 
+      role: "Manicure e Designer de Unhas",
+      image: "/images/testimonials/ana.jpg",
+      content: "Comecei sozinha e hoje tenho fila de espera. O TrickTime simplificou meus agendamentos e profissionalizou meu negócio.",
       rating: 5,
-      metric: "-85% faltas"
+      metric: "+60% agenda"
     },
     {
       name: "Dra. Camila Ribeiro",
       role: "Esteticista",
-      image: "https://images.unsplash.com/photo-1594824475317-2d9fb32f2217?w=150&h=150&fit=crop&crop=face", 
+      image: "/images/testimonials/camila.jpg", 
       content: "O link de agendamento nas minhas redes sociais trouxe 200% mais agendamentos. Simplesmente revolucionário!",
       rating: 5,
       metric: "+200% agendamentos"
@@ -179,18 +160,11 @@ export default function LandingPage() {
   }, [testimonials.length]);
 
   const socialProof = [
-    "Recomendado pelo CRM de SP",
+    "Preferido por microempreendedoras",
     "Certificado LGPD", 
     "Suporte 24/7",
     "99.9% Uptime"
   ];
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", form);
-    toast.success("Formulário enviado! Entraremos em contato em breve.");
-    // Aqui você adicionaria a lógica de envio do formulário para demonstração
-  };
 
   const handleCheckout = async () => {
     if (!checkoutEmail) {
@@ -268,8 +242,8 @@ export default function LandingPage() {
         </nav>
 
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button className="btn-cta hidden lg:flex">
-            Começar Grátis
+          <Button className="btn-cta hidden lg:flex" onClick={() => setShowCheckoutModal(true)}>
+            Assinar TrickTime Pro
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </motion.div>
@@ -323,9 +297,9 @@ export default function LandingPage() {
                 transition={{ delay: 0.6 }}
                 className="text-xl lg:text-2xl text-muted-foreground mb-8 font-medium"
               >
-                O sistema que <strong className="text-primary">triplicou a agenda</strong> de +15.000 profissionais da saúde.
+                O sistema que <strong className="text-primary">triplicou a agenda</strong> de +15.000 microempreendedoras.
                 <br />
-                <span className="text-accent font-bold">Reduza faltas em 89%</span> e atenda mais em menos tempo.
+                <span className="text-accent font-bold">✅ Feito para microempreendedoras • ✅ Sistema simples e intuitivo • ✅ Link personalizado para clientes</span>
               </motion.p>
 
               {/* Social Proof Rápida */}
@@ -352,15 +326,16 @@ export default function LandingPage() {
               >
                 <motion.button 
                   className="btn-hero w-full lg:w-auto"
+                  onClick={() => setShowCheckoutModal(true)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Play className="w-6 h-6 mr-3" />
-                  Começar Teste Grátis de 14 Dias
+                  Assinar TrickTime Pro
                 </motion.button>
                 
                 <p className="text-sm text-muted-foreground">
-                  ✅ Sem cartão de crédito • ✅ Suporte completo • ✅ Cancelamento a qualquer momento
+                  ✅ Feito para microempreendedoras • ✅ Sistema simples e intuitivo • ✅ Link personalizado para clientes
                 </p>
               </motion.div>
             </motion.div>
@@ -407,7 +382,7 @@ export default function LandingPage() {
         >
           <h3 className="text-3xl font-bold mb-6">Confiança de quem <span className="text-primary">transforma vidas</span></h3>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-12">
-            Mais de <strong className="text-primary">15.000 profissionais</strong> já descobriram como o TrickTime revoluciona a gestão de consultas, 
+            Mais de <strong className="text-primary">15.000 microempreendedoras</strong> já descobriram como o TrickTime revoluciona a gestão de consultas, 
             <strong className="text-accent"> reduzindo faltas em 89%</strong> e <strong className="text-accent">aumentando a receita em até 3x</strong>.
           </p>
 
@@ -416,7 +391,7 @@ export default function LandingPage() {
             {[
               { number: "3x", label: "Mais Receita", color: "text-accent" },
               { number: "89%", label: "Menos Faltas", color: "text-primary" },  
-              { number: "15k+", label: "Profissionais", color: "text-primary" },
+              { number: "15k+", label: "Microempreendedoras", color: "text-primary" },
               { number: "24/7", label: "Agendamentos", color: "text-accent" }
             ].map((metric, index) => (
               <motion.div
@@ -472,7 +447,7 @@ export default function LandingPage() {
                     <div className="bg-primary/10 text-primary p-3 rounded-xl mr-4 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
                       <FeatureIcon className="w-6 h-6" />
                     </div>
-                    <Badge className="bg-accent/10 text-accent text-xs font-bold">
+                    <Badge className="bg-accent/10 text-accent">
                       {feature.benefit}
                     </Badge>
                   </div>
@@ -522,8 +497,14 @@ export default function LandingPage() {
               <div className="testimonial-card text-center">
                 <div className="flex justify-center mb-6">
                   <img 
-                    src={testimonials[currentTestimonial].image} 
+                    src={testimonials[currentTestimonial].image}
                     alt={testimonials[currentTestimonial].name}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const name = testimonials[currentTestimonial]?.name || 'Cliente';
+                      (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=EEE&color=555&size=200`;
+                    }}
                     className="w-20 h-20 rounded-full object-cover ring-4 ring-primary/20 shadow-md"
                   />
                 </div>
@@ -538,11 +519,14 @@ export default function LandingPage() {
                   "{testimonials[currentTestimonial].content}"
                 </blockquote>
                 
-                <div className="flex justify-center items-center gap-4">
-                  <div>
+                <div className="flex justify-center items-center gap-4 flex-wrap">
+                  <div className="text-center">
                     <h4 className="font-bold text-lg">{testimonials[currentTestimonial].name}</h4>
                     <p className="text-muted-foreground">{testimonials[currentTestimonial].role}</p>
                   </div>
+                  <Badge className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" /> Verificado
+                  </Badge>
                   <Badge className="bg-accent text-accent-foreground font-bold">
                     {testimonials[currentTestimonial].metric}
                   </Badge>
@@ -551,16 +535,28 @@ export default function LandingPage() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Indicadores */}
-          <div className="flex justify-center space-x-2">
-            {testimonials.map((_, index) => (
+          {/* Indicadores com fotos reais */}
+          <div className="flex justify-center gap-4 mt-4 overflow-x-auto px-4">
+            {testimonials.map((t, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentTestimonial(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentTestimonial ? 'bg-primary scale-125' : 'bg-muted'
-                }`}
-              />
+                className={`flex flex-col items-center gap-2 focus:outline-none ${index === currentTestimonial ? 'scale-105' : 'opacity-80 hover:opacity-100'}`}
+                aria-label={`Ver depoimento de ${t.name}`}
+              >
+                <img
+                  src={t.image}
+                  alt={t.name}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const name = t?.name || 'Cliente';
+                    (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=EEE&color=555&size=200`;
+                  }}
+                  className={`w-14 h-14 rounded-full object-cover ring-2 transition-all ${index === currentTestimonial ? 'ring-primary' : 'ring-transparent'}`}
+                />
+                <span className="text-xs text-muted-foreground font-medium max-w-[90px] text-center truncate">{t.name}</span>
+              </button>
             ))}
           </div>
         </motion.div>
@@ -616,9 +612,9 @@ export default function LandingPage() {
           {/* Lista de Benefícios da Oferta */}
           <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
             {[
-              { icon: CheckCircle, text: "14 dias grátis", desc: "Teste sem risco" },
-              { icon: Users, text: "Pacientes ilimitados", desc: "Sem limite de cadastros" },
-              { icon: Zap, text: "Suporte prioritário", desc: "Atendimento VIP 24/7" }
+              { icon: CheckCircle, text: "✅ Feito para microempreendedoras", desc: "Pensado para o seu dia a dia" },
+              { icon: Zap, text: "✅ Sistema simples e intuitivo", desc: "Aprenda em minutos" },
+              { icon: Link2, text: "✅ Link personalizado para clientes", desc: "Agendamentos 24/7 com seu link" }
             ].map((benefit, index) => {
               const BenefitIcon = benefit.icon;
               return (
@@ -669,97 +665,6 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Formulário de Contato Otimizado */}
-      <section id="contato" className="py-20 px-6 bg-gradient-to-br from-background to-primary-light/5">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="container mx-auto max-w-2xl"
-        >
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-              <Phone className="w-4 h-4 mr-2" />
-              Fale conosco
-            </Badge>
-            <h3 className="text-4xl font-bold mb-6">
-              Pronto para <span className="text-primary">3x sua receita</span>?
-            </h3>
-            <p className="text-xl text-muted-foreground">
-              Preencha o formulário e receba uma <strong className="text-accent">análise gratuita</strong> da sua agenda
-            </p>
-          </div>
-
-          <motion.form 
-            onSubmit={handleFormSubmit}
-            className="space-y-6 bg-card p-8 rounded-2xl shadow-md border border-primary/10"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-          >
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Nome completo *</label>
-                <Input
-                  placeholder="Dr(a). Seu nome"
-                  value={form.nome}
-                  onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                  className="transition-all duration-300 focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Especialidade</label>
-                <Input
-                  placeholder="Ex: Fisioterapia"
-                  value={form.empresa}
-                  onChange={(e) => setForm({ ...form, empresa: e.target.value })}
-                  className="transition-all duration-300 focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">WhatsApp *</label>
-                <Input
-                  placeholder="(11) 99999-9999"
-                  value={form.whatsapp}
-                  onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
-                  className="transition-all duration-300 focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Email *</label>
-                <Input
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="transition-all duration-300 focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  required
-                />
-              </div>
-            </div>
-
-            <motion.button
-              type="submit"
-              className="btn-hero w-full text-xl py-4"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Calendar className="w-6 h-6 mr-3" />
-              Agendar Demonstração Gratuita
-            </motion.button>
-
-            <p className="text-center text-sm text-muted-foreground">
-              ✅ Demonstração personalizada • ✅ Análise da sua agenda • ✅ Sem compromisso
-            </p>
-          </motion.form>
-        </motion.div>
-      </section>
-
       {/* Footer Profissional */}
       <footer className="py-12 bg-primary text-primary-foreground">
         <motion.div
@@ -793,7 +698,6 @@ export default function LandingPage() {
             <div>
               <h5 className="font-bold mb-4">Suporte</h5>
               <ul className="space-y-2 text-sm text-primary-foreground/80">
-                <li><a href="#contato" className="hover:text-primary-foreground transition-colors">Contato</a></li>
                 <li><a href="#" className="hover:text-primary-foreground transition-colors">Central de Ajuda</a></li>
                 <li><a href="#" className="hover:text-primary-foreground transition-colors">WhatsApp</a></li>
               </ul>
@@ -811,7 +715,7 @@ export default function LandingPage() {
 
           <div className="border-t border-primary-foreground/20 pt-8 text-center">
             <p className="text-primary-foreground/60 text-sm">
-              © 2025 TrickTime - Todos os direitos reservados • CNPJ: 00.000.000/0001-00
+              &copy; 2025 TrickTime - Todos os direitos reservados
             </p>
           </div>
         </motion.div>
@@ -852,11 +756,11 @@ export default function LandingPage() {
               <div className="text-sm text-gray-600 space-y-1">
                 <div className="flex justify-between">
                   <span>Plano mensal:</span>
-                  <span className="line-through text-gray-400">R$ 497,00</span>
+                  <span className="line-through text-gray-400">R$ 120,00</span>
                 </div>
                 <div className="flex justify-between font-bold text-green-600">
                   <span>Valor promocional:</span>
-                  <span>R$ 89,90/mês</span>
+                  <span>R$ 21,99/mês</span>
                 </div>
               </div>
             </div>

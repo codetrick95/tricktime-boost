@@ -3,7 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2025-08-27.basil",
+  apiVersion: "2024-06-20",
 });
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -48,24 +48,40 @@ serve(async (req) => {
           const subscription = await stripe.subscriptions.retrieve(session.subscription);
           
           // Buscar ou criar usuário no Supabase
-          const customerEmail = session.customer_details?.email || session.metadata?.customer_email;
+          const customerEmailRaw: string | undefined = session.customer_details?.email || session.metadata?.customer_email;
+          const customerEmail = customerEmailRaw?.trim().toLowerCase();
           
           if (customerEmail) {
             // Criar usuário temporário para completar o cadastro
+            const tempPassword = Math.random().toString(36).substring(2, 15);
+            let userId: string | null = null;
+
             const { data: authData, error: authError } = await supabase.auth.admin.createUser({
               email: customerEmail,
-              password: Math.random().toString(36).substring(2, 15), // Senha temporária
+              password: tempPassword,
               email_confirm: true,
             });
 
             if (authError) {
-              console.error("Error creating user:", authError);
-            } else if (authData.user) {
+              console.warn("createUser failed, trying to find existing user:", authError);
+              // Se já existir, vamos buscar pelos usuários e seguir com o fluxo
+              const { data: listData, error: listErr } = await supabase.auth.admin.listUsers();
+              if (listErr) {
+                console.error("listUsers failed:", listErr);
+              } else {
+                const found = listData.users?.find((u: any) => u.email?.toLowerCase() === customerEmail);
+                if (found) userId = found.id;
+              }
+            } else if (authData?.user?.id) {
+              userId = authData.user.id;
+            }
+
+            if (userId) {
               // Salvar dados da assinatura
               const { error: subError } = await supabase
                 .from('subscriptions')
                 .upsert({
-                  user_id: authData.user.id,
+                  user_id: userId,
                   stripe_customer_id: session.customer,
                   stripe_subscription_id: subscription.id,
                   status: subscription.status,
@@ -78,7 +94,7 @@ serve(async (req) => {
                 console.error("Error saving subscription:", subError);
               } else {
                 console.log("Subscription saved successfully");
-                
+
                 // Enviar email de boas-vindas
                 try {
                   const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-welcome-email`, {
@@ -89,10 +105,10 @@ serve(async (req) => {
                     },
                     body: JSON.stringify({
                       email: customerEmail,
-                      userId: authData.user.id,
+                      userId,
                     }),
                   });
-                  
+
                   if (!emailResponse.ok) {
                     console.error("Failed to send welcome email");
                   }
@@ -100,6 +116,8 @@ serve(async (req) => {
                   console.error("Error sending welcome email:", emailError);
                 }
               }
+            } else {
+              console.error("Could not determine userId from Stripe session email");
             }
           }
         }

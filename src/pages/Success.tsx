@@ -42,23 +42,26 @@ export default function Success() {
     try {
       const { data, error } = await supabase.functions.invoke('create-account', {
         body: {
+          action: "create",
           email,
           password,
-          sessionId
-        }
+          nome: email?.split("@")[0] || undefined,
+          sessionId,
+        },
       });
 
       if (error) {
         throw error;
       }
 
-      if (data.success) {
-        toast.success(data.message);
+      const isOk = Boolean(data?.success) || Boolean(data?.ok);
+      if (isOk) {
+        toast.success(data?.message || "Conta criada/atualizada com sucesso!");
         setTimeout(() => {
           navigate("/dashboard");
         }, 2000);
       } else {
-        throw new Error(data.error || "Erro ao criar conta");
+        throw new Error(data?.error || "Erro ao criar conta");
       }
     } catch (error: any) {
       console.error("Error creating account:", error);
