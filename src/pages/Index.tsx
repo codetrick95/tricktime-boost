@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Home, 
@@ -25,8 +27,14 @@ import {
   Quote,
   Award,
   Target,
-  Gift
+  Gift,
+  CreditCard,
+  Loader2,
+  Crown
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNavigate, Link } from "react-router-dom";
 
 interface FormData {
   nome: string;
@@ -68,6 +76,10 @@ export default function LandingPage() {
   });
   const [timeLeft, setTimeLeft] = useState(3600); // 1 hora em segundos
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [checkoutEmail, setCheckoutEmail] = useState("");
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Contador regressivo
   useEffect(() => {
@@ -176,7 +188,41 @@ export default function LandingPage() {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", form);
-    // Aqui você adicionaria a lógica de envio do formulário
+    toast.success("Formulário enviado! Entraremos em contato em breve.");
+    // Aqui você adicionaria a lógica de envio do formulário para demonstração
+  };
+
+  const handleCheckout = async () => {
+    if (!checkoutEmail) {
+      toast.error("Por favor, digite seu email");
+      return;
+    }
+
+    setIsCheckoutLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { email: checkoutEmail }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.url) {
+        // Abrir checkout em nova aba
+        window.open(data.url, '_blank');
+        setShowCheckoutModal(false);
+        toast.success("Checkout iniciado! Confira a nova aba.");
+      } else {
+        throw new Error("URL de checkout não encontrada");
+      }
+    } catch (error: any) {
+      console.error("Error creating checkout:", error);
+      toast.error(error.message || "Erro ao iniciar checkout. Tente novamente.");
+    } finally {
+      setIsCheckoutLoading(false);
+    }
   };
 
   return (
@@ -597,16 +643,17 @@ export default function LandingPage() {
           {/* CTA da Oferta */}
           {timeLeft > 0 && (
             <motion.button
+              onClick={() => setShowCheckoutModal(true)}
               className="btn-hero text-2xl px-12 py-6 mb-6"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              🚀 GARANTIR MINHA VAGA COM 82% OFF
+              🚀 ASSINAR AGORA COM 82% OFF
             </motion.button>
           )}
 
           <p className="text-sm text-muted-foreground">
-            💳 Sem cartão de crédito • 🔒 Dados protegidos • ⭐ Garantia de 30 dias
+            💳 Cartão + PIX • 🔒 Pagamento 100% seguro • ⭐ Garantia de 30 dias
           </p>
 
           {/* Escassez Social */}
@@ -769,6 +816,76 @@ export default function LandingPage() {
           </div>
         </motion.div>
       </footer>
+
+      {/* Modal de Checkout */}
+      <Dialog open={showCheckoutModal} onOpenChange={setShowCheckoutModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-primary" />
+              Finalizar Assinatura
+            </DialogTitle>
+            <DialogDescription>
+              Digite seu email para prosseguir com o checkout seguro
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="checkout-email">Email</Label>
+              <Input
+                id="checkout-email"
+                type="email"
+                placeholder="seu@email.com"
+                value={checkoutEmail}
+                onChange={(e) => setCheckoutEmail(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            
+            <div className="bg-gradient-to-r from-purple-50 to-green-50 p-4 rounded-lg border">
+              <div className="flex items-center gap-2 mb-2">
+                <Crown className="h-4 w-4 text-purple-600" />
+                <span className="font-semibold text-purple-900">TrickTime Pro</span>
+                <Badge className="bg-green-100 text-green-800 text-xs">82% OFF</Badge>
+              </div>
+              <div className="text-sm text-gray-600 space-y-1">
+                <div className="flex justify-between">
+                  <span>Plano mensal:</span>
+                  <span className="line-through text-gray-400">R$ 497,00</span>
+                </div>
+                <div className="flex justify-between font-bold text-green-600">
+                  <span>Valor promocional:</span>
+                  <span>R$ 89,90/mês</span>
+                </div>
+              </div>
+            </div>
+            
+            <Button
+              onClick={handleCheckout}
+              disabled={isCheckoutLoading || !checkoutEmail}
+              className="w-full bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700"
+              size="lg"
+            >
+              {isCheckoutLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Prosseguir para Pagamento
+                </>
+              )}
+            </Button>
+            
+            <p className="text-xs text-center text-gray-500">
+              Pagamento processado pelo Stripe • Ambiente 100% seguro
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
